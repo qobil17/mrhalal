@@ -1,0 +1,116 @@
+# ====================================
+# Dependencies
+# ====================================
+node_modules/
+**/node_modules/
+.pnpm-store/
+.yarn/
+
+# ====================================
+# Environment files (NEVER commit - contains secrets!)
+# ====================================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.test
+
+# ====================================
+# Build outputs
+# ====================================
+dist/
+build/
+out/
+**/dist/
+**/build/
+**/out/
+
+# ====================================
+# Prisma generated files
+# ====================================
+**/generated/
+**/generated/prisma/
+prisma/migrations/dev.db*
+
+# ====================================
+# TypeScript build info
+# ====================================
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# ====================================
+# Logs
+# ====================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ====================================
+# Testing & Coverage
+# ====================================
+coverage/
+**/coverage/
+.nyc_output/
+
+# ====================================
+# IDE / Editor
+# ====================================
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# ====================================
+# OS files
+# ====================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ====================================
+# Cache
+# ====================================
+.cache/
+.npm/
+.eslintcache
+.parcel-cache/
+
+# ====================================
+# Temporary files
+# ====================================
+*.tmp
+*.temp
+.tmp/
+
+# ====================================
+# Runtime data
+# ====================================
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ====================================
+# Uploads (if local file storage used)
+# ====================================
+uploads/
+**/uploads/
+
+# ====================================
+# Claude Code
+# ====================================
+.claude/
