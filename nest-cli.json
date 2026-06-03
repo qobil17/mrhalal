@@ -7,7 +7,7 @@
   "sourceRoot": "apps/mrhalal-api/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "webpack": true,
+    "webpack": false,
     "tsConfigPath": "apps/mrhalal-api/tsconfig.app.json"
   },
   "monorepo": true,
