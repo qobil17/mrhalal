@@ -114,3 +114,4 @@ uploads/
 # Claude Code
 # ====================================
 .claude/
+/generated/prisma

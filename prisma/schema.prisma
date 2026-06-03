@@ -1,0 +1,326 @@
+// =============================================
+// mrhalal — Halal grocery store for South Korea
+// PostgreSQL + Prisma 7 schema
+// =============================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================
+// ENUMS
+// =============================================
+
+enum MemberRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum Language {
+  uz
+  ko
+  ar
+  en
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  KAKAO_PAY
+  CASH
+}
+
+// =============================================
+// MEMBER (Customer + Admin)
+// =============================================
+
+model Member {
+  id        Int        @id @default(autoincrement())
+  email     String?    @unique
+  phone     String?    @unique
+  password  String
+  firstName String
+  lastName  String?
+  avatar    String?
+  role      MemberRole @default(CUSTOMER)
+  language  Language   @default(uz)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+  addresses Address[]
+  cart      Cart?
+  orders    Order[]
+  reviews   Review[]
+  wishlist  Wishlist[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@index([deletedAt])
+  @@map("members")
+}
+
+// =============================================
+// ADDRESS (delivery addresses)
+// =============================================
+
+model Address {
+  id            Int       @id @default(autoincrement())
+  memberId      Int
+  recipientName String
+  phone         String
+  postalCode    String
+  addressLine1  String
+  addressLine2  String?
+  city          String
+  isDefault     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  member        Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  orders        Order[]
+
+  @@index([memberId])
+  @@index([deletedAt])
+  @@map("addresses")
+}
+
+// =============================================
+// CATEGORY (4 languages)
+// =============================================
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  slug      String    @unique
+  nameUz    String
+  nameKo    String
+  nameAr    String
+  nameEn    String
+  image     String?
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  products  Product[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("categories")
+}
+
+// =============================================
+// PRODUCT (4 languages)
+// =============================================
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  slug          String         @unique
+  nameUz        String
+  nameKo        String
+  nameAr        String
+  nameEn        String
+  descriptionUz String?
+  descriptionKo String?
+  descriptionAr String?
+  descriptionEn String?
+  price         Decimal        @db.Decimal(10, 2)
+  comparePrice  Decimal?       @db.Decimal(10, 2)
+  stockQuantity Int            @default(0)
+  unit          String         @default("kg")
+  weight        Decimal?       @db.Decimal(10, 2)
+  isActive      Boolean        @default(true)
+  isFeatured    Boolean        @default(false)
+  categoryId    Int
+  viewCount     Int            @default(0)
+  soldCount     Int            @default(0)
+  averageRating Float          @default(0)
+  reviewCount   Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  createdById   Int?
+  updatedById   Int?
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  images        ProductImage[]
+  category      Category       @relation(fields: [categoryId], references: [id])
+  reviews       Review[]
+  wishlistedBy  Wishlist[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([deletedAt])
+  @@index([price])
+  @@map("products")
+}
+
+// =============================================
+// PRODUCT IMAGE (gallery)
+// =============================================
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// =============================================
+// CART (one per member)
+// =============================================
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  memberId  Int        @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
+  member    Member     @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@map("carts")
+}
+
+// =============================================
+// CART ITEM
+// =============================================
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+// =============================================
+// ORDER
+// =============================================
+
+model Order {
+  id             Int            @id @default(autoincrement())
+  orderNumber    String         @unique
+  memberId       Int
+  status         OrderStatus    @default(PENDING)
+  subtotal       Decimal        @db.Decimal(10, 2)
+  shippingCost   Decimal        @default(0) @db.Decimal(10, 2)
+  totalAmount    Decimal        @db.Decimal(10, 2)
+  addressId      Int
+  paymentMethod  PaymentMethod?
+  paymentProof   String?
+  paidAt         DateTime?
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  customerNote   String?
+  adminNote      String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+  createdById    Int?
+  updatedById    Int?
+  items          OrderItem[]
+  address        Address        @relation(fields: [addressId], references: [id])
+  member         Member         @relation(fields: [memberId], references: [id])
+
+  @@index([orderNumber])
+  @@index([memberId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("orders")
+}
+
+// =============================================
+// ORDER ITEM (price snapshot)
+// =============================================
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  productId   Int
+  productName String
+  price       Decimal  @db.Decimal(10, 2)
+  quantity    Int
+  subtotal    Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// =============================================
+// REVIEW (product reviews)
+// =============================================
+
+model Review {
+  id         Int       @id @default(autoincrement())
+  memberId   Int
+  productId  Int
+  rating     Int
+  comment    String?
+  isApproved Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  member     Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, productId])
+  @@index([productId])
+  @@index([rating])
+  @@index([isApproved])
+  @@map("reviews")
+}
+
+// =============================================
+// WISHLIST (favorite products)
+// =============================================
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  memberId  Int
+  productId Int
+  createdAt DateTime @default(now())
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, productId])
+  @@index([memberId])
+  @@index([productId])
+  @@map("wishlists")
+}
