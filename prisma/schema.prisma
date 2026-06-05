@@ -45,6 +45,20 @@ enum PaymentMethod {
 }
 
 // =============================================
+// UNIT (Product measurement units)
+// =============================================
+
+enum Unit {
+  G       // gram
+  KG      // kilogram
+  L       // liter
+  ML      // milliliter
+  PIECE   // count (dona)
+
+  @@map("unit")
+}
+
+// =============================================
 // MEMBER (Customer + Admin)
 // =============================================
 
@@ -142,8 +156,9 @@ model Product {
   descriptionEn String?
   price         Decimal        @db.Decimal(10, 2)
   comparePrice  Decimal?       @db.Decimal(10, 2)
+  currency      String         @default("KRW") @db.VarChar(3)
   stockQuantity Int            @default(0)
-  unit          String         @default("kg")
+  unit          Unit           @default(KG)
   weight        Decimal?       @db.Decimal(10, 2)
   isActive      Boolean        @default(true)
   isFeatured    Boolean        @default(false)

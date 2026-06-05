@@ -171,12 +171,18 @@ export class CategoryService {
       throw new NotFoundException('Category not found');
     }
 
+    const archivedSlug = `${category.slug}_deleted_${Date.now()}`;
+
     await this.prisma.category.update({
       where: { id },
-      data: { deletedAt: new Date(), isActive: false },
+      data: {
+        slug: archivedSlug,
+        deletedAt: new Date(),
+        isActive: false,
+      },
     });
 
-    this.logger.warn(`Category soft-deleted: ${category.slug}`);
+    this.logger.warn(`Category soft-deleted: ${category.slug} → ${archivedSlug}`);
     return true;
   }
 
