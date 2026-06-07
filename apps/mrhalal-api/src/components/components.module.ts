@@ -4,9 +4,10 @@ import { MemberModule } from './member/member.module';
 import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
-  imports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule],
-  exports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule],
+  imports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule],
+  exports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule],
 })
 export class ComponentsModule {}
