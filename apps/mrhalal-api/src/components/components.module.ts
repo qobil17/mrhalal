@@ -5,9 +5,10 @@ import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
 import { AddressModule } from './address/address.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
-  imports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule],
-  exports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule],
+  imports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule, OrderModule],
+  exports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule, OrderModule],
 })
 export class ComponentsModule {}

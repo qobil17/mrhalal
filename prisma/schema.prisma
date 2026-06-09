@@ -107,7 +107,6 @@ model Address {
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
   member        Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  orders        Order[]
 
   @@index([memberId])
   @@index([deletedAt])
@@ -250,24 +249,30 @@ model Order {
   memberId       Int
   status         OrderStatus    @default(PENDING)
   subtotal       Decimal        @db.Decimal(10, 2)
-  shippingCost   Decimal        @default(0) @db.Decimal(10, 2)
-  totalAmount    Decimal        @db.Decimal(10, 2)
-  addressId      Int
+  deliveryFee    Decimal        @default(0) @db.Decimal(10, 2)
+  total          Decimal        @db.Decimal(10, 2)
+  currency       String         @default("KRW") @db.VarChar(3)
   paymentMethod  PaymentMethod?
   paymentProof   String?
   paidAt         DateTime?
   trackingNumber String?
   shippedAt      DateTime?
   deliveredAt    DateTime?
-  customerNote   String?
+  notes          String?
   adminNote      String?
+  // Address snapshot (preserved even if customer changes address later)
+  recipientName  String
+  phone          String
+  postalCode     String
+  city           String
+  addressLine1   String
+  addressLine2   String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   deletedAt      DateTime?
   createdById    Int?
   updatedById    Int?
   items          OrderItem[]
-  address        Address        @relation(fields: [addressId], references: [id])
   member         Member         @relation(fields: [memberId], references: [id])
 
   @@index([orderNumber])
