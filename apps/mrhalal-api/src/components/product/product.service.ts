@@ -217,7 +217,7 @@ export class ProductService {
   }
 
   async updateProduct(input: UpdateProductInput, memberId: number): Promise<Product> {
-    const { id, ...data } = input;
+    const { id, images, ...data } = input;
 
     const product = await this.prisma.product.findFirst({
       where: { id, deletedAt: null },
@@ -244,10 +244,31 @@ export class ProductService {
       updateData.slug = newSlug;
     }
 
-    const updated = await this.prisma.product.update({
-      where: { id },
-      data: updateData,
-      include: { images: { orderBy: { sortOrder: 'asc' } } },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // images kelsa — eskisini o'chir, yangisini yoz; kelmasa — tegma
+      if (images !== undefined) {
+        await tx.productImage.deleteMany({ where: { productId: id } });
+      }
+
+      return tx.product.update({
+        where: { id },
+        data: {
+          ...updateData,
+          ...(images !== undefined && images.length > 0
+            ? {
+                images: {
+                  create: images.map((img, idx) => ({
+                    url: img.url,
+                    alt: img.alt,
+                    sortOrder: img.sortOrder ?? idx,
+                    isPrimary: img.isPrimary ?? idx === 0,
+                  })),
+                },
+              }
+            : {}),
+        },
+        include: { images: { orderBy: { sortOrder: 'asc' } } },
+      });
     });
 
     this.logger.log(`Product updated: ${updated.slug}`);

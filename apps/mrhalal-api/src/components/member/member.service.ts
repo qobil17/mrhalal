@@ -1,11 +1,12 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@libs/prisma';
-import { Member } from '@libs/types';
+import { Member, MemberRole } from '@libs/types';
 import { MemberUpdateInput } from './dto/member-update.input';
 import { MemberByAdminUpdate } from './dto/member-by-admin.update';
 import { MembersInquiry } from './dto/members-inquiry.input';
@@ -132,7 +133,7 @@ export class MemberService {
     return { list: cleanList, total, page, limit };
   }
 
-  async updateMemberByAdmin(input: MemberByAdminUpdate): Promise<Member> {
+  async updateMemberByAdmin(input: MemberByAdminUpdate, currentUserId: number): Promise<Member> {
     const { id, ...data } = input;
 
     const member = await this.prisma.member.findFirst({
@@ -141,6 +142,22 @@ export class MemberService {
 
     if (!member) {
       throw new NotFoundException('Member not found');
+    }
+
+    // Rol o'zgartirilayotgan bo'lsa himoyalarni tekshir
+    if (data.role !== undefined && data.role !== member.role) {
+      if (id === currentUserId) {
+        throw new ForbiddenException('O\'z akkauntingizning rolini o\'zgartira olmaysiz');
+      }
+
+      if (member.role === MemberRole.ADMIN && data.role === MemberRole.CUSTOMER) {
+        const adminCount = await this.prisma.member.count({
+          where: { role: MemberRole.ADMIN, deletedAt: null },
+        });
+        if (adminCount <= 1) {
+          throw new BadRequestException('Kamida bitta admin qolishi kerak');
+        }
+      }
     }
 
     if (data.email) {

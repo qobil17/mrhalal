@@ -63,9 +63,10 @@ export class MemberResolver {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(MemberRole.ADMIN)
   async updateMemberByAdmin(
+    @CurrentUser() currentUser: Member,
     @Args('input') input: MemberByAdminUpdate,
   ): Promise<Member> {
-    return this.memberService.updateMemberByAdmin(input);
+    return this.memberService.updateMemberByAdmin(input, currentUser.id);
   }
 
   @Mutation(() => Boolean)

@@ -9,8 +9,13 @@ import {
   IsEnum,
   MinLength,
   MaxLength,
+  IsArray,
+  ArrayMaxSize,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { Unit } from '@libs/types';
+import { ProductImageInput } from './product-image.input';
 
 @InputType()
 export class UpdateProductInput {
@@ -120,4 +125,12 @@ export class UpdateProductInput {
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;
+
+  @Field(() => [ProductImageInput], { nullable: true })
+  @IsArray()
+  @ArrayMaxSize(10)
+  @ValidateNested({ each: true })
+  @Type(() => ProductImageInput)
+  @IsOptional()
+  images?: ProductImageInput[];
 }
