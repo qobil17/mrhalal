@@ -4,6 +4,8 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { PrismaModule } from '@libs/prisma';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { UploadModule } from './upload/upload.module';
 import { ComponentsModule } from './components/components.module';
 import { AppService } from './app.service';
 import { AppResolver } from './app.resolver';
@@ -23,6 +25,8 @@ import { AppResolver } from './app.resolver';
       context: ({ req, res }) => ({ req, res }),
     }),
     PrismaModule,
+    CloudinaryModule,
+    UploadModule,
     ComponentsModule,
   ],
   controllers: [],
