@@ -40,6 +40,11 @@ export class ProductResolver {
     return this.productService.getFeaturedProducts();
   }
 
+  @Query(() => [Product])
+  async getDiscountedProducts(): Promise<Product[]> {
+    return this.productService.getDiscountedProducts();
+  }
+
   // ADMIN
 
   @Query(() => ProductsResponse)

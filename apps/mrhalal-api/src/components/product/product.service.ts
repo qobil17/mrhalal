@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@libs/prisma';
+import { ProductLabel } from '@libs/types';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { ProductsInquiry } from './dto/products-inquiry.input';
@@ -109,7 +110,18 @@ export class ProductService {
 
   async getFeaturedProducts(): Promise<Product[]> {
     const list = await this.prisma.product.findMany({
-      where: { isFeatured: true, isActive: true, deletedAt: null },
+      where: { label: ProductLabel.RECOMMENDED, isActive: true, deletedAt: null },
+      include: { images: { orderBy: { sortOrder: 'asc' } } },
+      orderBy: { createdAt: 'desc' },
+      take: 12,
+    });
+
+    return list.map(this.transformProduct) as any;
+  }
+
+  async getDiscountedProducts(): Promise<Product[]> {
+    const list = await this.prisma.product.findMany({
+      where: { label: ProductLabel.DISCOUNT, isActive: true, deletedAt: null },
       include: { images: { orderBy: { sortOrder: 'asc' } } },
       orderBy: { createdAt: 'desc' },
       take: 12,
