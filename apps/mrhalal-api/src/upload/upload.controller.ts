@@ -1,9 +1,7 @@
 import {
   BadRequestException,
   Controller,
-  ForbiddenException,
   Post,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -37,11 +35,7 @@ export class UploadController {
   )
   async uploadImage(
     @UploadedFile() file: Express.Multer.File | undefined,
-    @Req() req: { user?: { role?: string } },
   ): Promise<{ url: string; publicId: string }> {
-    if (req.user?.role !== 'ADMIN') {
-      throw new ForbiddenException('Faqat adminlar rasm yuklay oladi');
-    }
     if (!file) {
       throw new BadRequestException('Rasm fayli topilmadi — so\'rovda "file" maydonini yuborish kerak');
     }

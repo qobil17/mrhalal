@@ -14,7 +14,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Unit } from '@libs/types';
+import { Unit, ProductLabel } from '@libs/types';
 import { ProductImageInput } from './product-image.input';
 
 @InputType()
@@ -125,6 +125,11 @@ export class UpdateProductInput {
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;
+
+  @Field(() => ProductLabel, { nullable: true })
+  @IsEnum(ProductLabel)
+  @IsOptional()
+  label?: ProductLabel;
 
   @Field(() => [ProductImageInput], { nullable: true })
   @IsArray()

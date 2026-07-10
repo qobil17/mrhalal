@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType, Int, Float } from '@nestjs/graphql';
-import { Unit } from '@libs/types';
+import { Unit, ProductLabel } from '@libs/types';
 
 @ObjectType()
 export class ProductImageType {
@@ -77,6 +77,9 @@ export class Product {
 
   @Field()
   isFeatured: boolean;
+
+  @Field(() => ProductLabel, { nullable: true })
+  label?: ProductLabel;
 
   @Field(() => Int)
   viewCount: number;

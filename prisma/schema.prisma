@@ -44,6 +44,11 @@ enum PaymentMethod {
   CASH
 }
 
+enum ProductLabel {
+  RECOMMENDED
+  DISCOUNT
+}
+
 // =============================================
 // UNIT (Product measurement units)
 // =============================================
@@ -161,6 +166,8 @@ model Product {
   weight        Decimal?       @db.Decimal(10, 2)
   isActive      Boolean        @default(true)
   isFeatured    Boolean        @default(false)
+  label         ProductLabel?
+  expiryDate    DateTime?
   categoryId    Int
   viewCount     Int            @default(0)
   soldCount     Int            @default(0)
@@ -184,6 +191,8 @@ model Product {
   @@index([isFeatured])
   @@index([deletedAt])
   @@index([price])
+  @@index([label])
+  @@index([expiryDate])
   @@map("products")
 }
 
@@ -326,6 +335,22 @@ model Review {
   @@index([rating])
   @@index([isApproved])
   @@map("reviews")
+}
+
+// =============================================
+// BANNER (home page promo banners)
+// =============================================
+
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String
+  imageUrl  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("banners")
 }
 
 // =============================================
