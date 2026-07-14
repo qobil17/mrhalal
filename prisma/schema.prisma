@@ -343,6 +343,7 @@ model Banner {
   id        Int      @id @default(autoincrement())
   title     String
   imageUrl  String
+  sortOrder Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

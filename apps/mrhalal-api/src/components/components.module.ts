@@ -8,9 +8,10 @@ import { AddressModule } from './address/address.module';
 import { OrderModule } from './order/order.module';
 import { ReviewModule } from './review/review.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { BannerModule } from './banner/banner.module';
 
 @Module({
-  imports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule, OrderModule, ReviewModule, WishlistModule],
-  exports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule, OrderModule, ReviewModule, WishlistModule],
+  imports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule, OrderModule, ReviewModule, WishlistModule, BannerModule],
+  exports: [AuthModule, MemberModule, CategoryModule, ProductModule, CartModule, AddressModule, OrderModule, ReviewModule, WishlistModule, BannerModule],
 })
 export class ComponentsModule {}
