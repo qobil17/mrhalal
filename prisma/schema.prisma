@@ -165,7 +165,6 @@ model Product {
   unit          Unit           @default(KG)
   weight        Decimal?       @db.Decimal(10, 2)
   isActive      Boolean        @default(true)
-  isFeatured    Boolean        @default(false)
   label         ProductLabel?
   expiryDate    DateTime?
   categoryId    Int
@@ -188,7 +187,6 @@ model Product {
   @@index([slug])
   @@index([categoryId])
   @@index([isActive])
-  @@index([isFeatured])
   @@index([deletedAt])
   @@index([price])
   @@index([label])

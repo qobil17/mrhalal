@@ -75,11 +75,11 @@ export class Product {
   @Field()
   isActive: boolean;
 
-  @Field()
-  isFeatured: boolean;
-
   @Field(() => ProductLabel, { nullable: true })
   label?: ProductLabel;
+
+  @Field({ nullable: true })
+  expiryDate?: Date;
 
   @Field(() => Int)
   viewCount: number;

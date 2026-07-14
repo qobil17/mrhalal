@@ -65,6 +65,13 @@ export class ProductResolver {
     return this.productService.getProductByIdAdmin(id);
   }
 
+  @Query(() => [Product])
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(MemberRole.ADMIN)
+  async getExpiringProducts(): Promise<Product[]> {
+    return this.productService.getExpiringProducts();
+  }
+
   @Mutation(() => Product)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(MemberRole.ADMIN)

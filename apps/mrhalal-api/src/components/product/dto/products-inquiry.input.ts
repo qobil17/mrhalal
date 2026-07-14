@@ -47,10 +47,5 @@ export class ProductsInquiry {
   @Field({ nullable: true })
   @IsBoolean()
   @IsOptional()
-  isFeatured?: boolean;
-
-  @Field({ nullable: true })
-  @IsBoolean()
-  @IsOptional()
   isActive?: boolean;
 }

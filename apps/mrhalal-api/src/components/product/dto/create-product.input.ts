@@ -9,6 +9,7 @@ import {
   IsArray,
   ValidateNested,
   IsEnum,
+  IsDate,
   MinLength,
   MaxLength,
   ArrayMaxSize,
@@ -111,15 +112,15 @@ export class CreateProductInput {
   @IsOptional()
   isActive?: boolean;
 
-  @Field({ defaultValue: false })
-  @IsBoolean()
-  @IsOptional()
-  isFeatured?: boolean;
-
   @Field(() => ProductLabel, { nullable: true })
   @IsEnum(ProductLabel)
   @IsOptional()
   label?: ProductLabel;
+
+  @Field({ nullable: true })
+  @IsDate()
+  @IsOptional()
+  expiryDate?: Date;
 
   @Field(() => [ProductImageInput], { nullable: true })
   @IsArray()

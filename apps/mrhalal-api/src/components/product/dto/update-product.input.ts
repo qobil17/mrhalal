@@ -7,6 +7,7 @@ import {
   Min,
   IsNumber,
   IsEnum,
+  IsDate,
   MinLength,
   MaxLength,
   IsArray,
@@ -121,15 +122,15 @@ export class UpdateProductInput {
   @IsOptional()
   isActive?: boolean;
 
-  @Field({ nullable: true })
-  @IsBoolean()
-  @IsOptional()
-  isFeatured?: boolean;
-
   @Field(() => ProductLabel, { nullable: true })
   @IsEnum(ProductLabel)
   @IsOptional()
   label?: ProductLabel;
+
+  @Field({ nullable: true })
+  @IsDate()
+  @IsOptional()
+  expiryDate?: Date;
 
   @Field(() => [ProductImageInput], { nullable: true })
   @IsArray()

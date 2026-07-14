@@ -22,7 +22,7 @@ export class ProductService {
   // ============================================
 
   async getAllProducts(input: ProductsInquiry): Promise<ProductsResponse> {
-    const { page, limit, search, categoryId, minPrice, maxPrice, isFeatured } = input;
+    const { page, limit, search, categoryId, minPrice, maxPrice } = input;
     const skip = (page - 1) * limit;
 
     const where: any = {
@@ -31,7 +31,6 @@ export class ProductService {
     };
 
     if (categoryId) where.categoryId = categoryId;
-    if (isFeatured !== undefined) where.isFeatured = isFeatured;
 
     if (minPrice !== undefined || maxPrice !== undefined) {
       where.price = {};
@@ -57,7 +56,7 @@ export class ProductService {
         include: {
           images: { orderBy: { sortOrder: 'asc' } },
         },
-        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        orderBy: { createdAt: 'desc' },
       }),
       this.prisma.product.count({ where }),
     ]);
@@ -135,13 +134,12 @@ export class ProductService {
   // ============================================
 
   async getAllProductsByAdmin(input: ProductsInquiry): Promise<ProductsResponse> {
-    const { page, limit, search, categoryId, minPrice, maxPrice, isFeatured, isActive } = input;
+    const { page, limit, search, categoryId, minPrice, maxPrice, isActive } = input;
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };
 
     if (categoryId) where.categoryId = categoryId;
-    if (isFeatured !== undefined) where.isFeatured = isFeatured;
     if (isActive !== undefined) where.isActive = isActive;
 
     if (minPrice !== undefined || maxPrice !== undefined) {
@@ -187,6 +185,23 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('Product not found');
     return this.transformProduct(product) as any;
+  }
+
+  async getExpiringProducts(): Promise<Product[]> {
+    const now = new Date();
+    const twoMonthsFromNow = new Date(now);
+    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+
+    const list = await this.prisma.product.findMany({
+      where: {
+        expiryDate: { not: null, lte: twoMonthsFromNow },
+        deletedAt: null,
+      },
+      include: { images: { orderBy: { sortOrder: 'asc' } } },
+      orderBy: { expiryDate: 'asc' },
+    });
+
+    return list.map(this.transformProduct) as any;
   }
 
   async createProduct(input: CreateProductInput, memberId: number): Promise<Product> {
