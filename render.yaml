@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: singapore
-    buildCommand: yarn install --frozen-lockfile && npx prisma generate && yarn build
+    buildCommand: yarn install --frozen-lockfile --production=false && npx prisma generate && yarn build
     startCommand: npx prisma migrate deploy && yarn start:prod
     healthCheckPath: /health
     autoDeploy: true
