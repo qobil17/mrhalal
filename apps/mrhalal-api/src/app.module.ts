@@ -6,6 +6,7 @@ import { join } from 'path';
 import { PrismaModule } from '@libs/prisma';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { UploadModule } from './upload/upload.module';
+import { HealthModule } from './health/health.module';
 import { ComponentsModule } from './components/components.module';
 import { AppService } from './app.service';
 import { AppResolver } from './app.resolver';
@@ -27,6 +28,7 @@ import { AppResolver } from './app.resolver';
     PrismaModule,
     CloudinaryModule,
     UploadModule,
+    HealthModule,
     ComponentsModule,
   ],
   controllers: [],
