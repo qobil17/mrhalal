@@ -255,73 +255,72 @@ export class OrderService {
   ): Promise<OrderType> {
     const { id, status: newStatus } = input;
 
-    const order = await this.prisma.order.findFirst({
-      where: { id },
-      include: { items: true },
-    });
-    if (!order) throw new NotFoundException('Order topilmadi');
+    const updatedOrder = await this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findFirst({
+        where: { id },
+        include: { items: true },
+      });
+      if (!order) throw new NotFoundException('Order topilmadi');
 
-    if (order.status === newStatus) {
-      throw new BadRequestException('Status allaqachon shu holatda');
-    }
+      if (order.status === newStatus) {
+        throw new BadRequestException('Status allaqachon shu holatda');
+      }
 
-    const oldStatus = order.status;
+      const oldStatus = order.status;
 
-    // PENDING → PAID: decrease stock
-    if (newStatus === OrderStatus.PAID && oldStatus === OrderStatus.PENDING) {
-      for (const item of order.items) {
-        const product = await this.prisma.product.findFirst({
-          where: { id: item.productId },
-        });
-        if (!product || product.stockQuantity < item.quantity) {
-          throw new BadRequestException(
-            `Mahsulot tugagan: ${item.productName}. Pulni qaytaring va orderni bekor qiling.`,
-          );
+      // PENDING → PAID: decrease stock (atomic conditional decrement — prevents overselling under concurrent updates)
+      if (newStatus === OrderStatus.PAID && oldStatus === OrderStatus.PENDING) {
+        for (const item of order.items) {
+          const decremented = await tx.product.updateMany({
+            where: { id: item.productId, stockQuantity: { gte: item.quantity } },
+            data: {
+              stockQuantity: { decrement: item.quantity },
+              soldCount: { increment: item.quantity },
+            },
+          });
+          if (decremented.count === 0) {
+            throw new BadRequestException(
+              `Mahsulot tugagan: ${item.productName}. Pulni qaytaring va orderni bekor qiling.`,
+            );
+          }
         }
+        this.logger.log(`Stock decremented for order ${order.orderNumber}`);
       }
-      for (const item of order.items) {
-        await this.prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            stockQuantity: { decrement: item.quantity },
-            soldCount: { increment: item.quantity },
-          },
-        });
-      }
-      this.logger.log(`Stock decremented for order ${order.orderNumber}`);
-    }
 
-    // PAID/SHIPPED/DELIVERED → CANCELLED: restore stock
-    const stockReducedStatuses = [
-      OrderStatus.PAID,
-      OrderStatus.SHIPPED,
-      OrderStatus.DELIVERED,
-    ];
-    if (
-      newStatus === OrderStatus.CANCELLED &&
-      stockReducedStatuses.includes(oldStatus as any)
-    ) {
-      for (const item of order.items) {
-        await this.prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            stockQuantity: { increment: item.quantity },
-            soldCount: { decrement: item.quantity },
-          },
-        });
+      // PAID/SHIPPED/DELIVERED → CANCELLED: restore stock
+      const stockReducedStatuses = [
+        OrderStatus.PAID,
+        OrderStatus.SHIPPED,
+        OrderStatus.DELIVERED,
+      ];
+      if (
+        newStatus === OrderStatus.CANCELLED &&
+        stockReducedStatuses.includes(oldStatus as any)
+      ) {
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: { increment: item.quantity },
+              soldCount: { decrement: item.quantity },
+            },
+          });
+        }
+        this.logger.warn(`Stock restored for cancelled order ${order.orderNumber}`);
       }
-      this.logger.warn(`Stock restored for cancelled order ${order.orderNumber}`);
-    }
 
-    const updated = await this.prisma.order.update({
-      where: { id },
-      data: { status: newStatus, updatedById: adminId },
-      include: { items: true },
+      const result = await tx.order.update({
+        where: { id },
+        data: { status: newStatus, updatedById: adminId },
+        include: { items: true },
+      });
+
+      this.logger.log(
+        `Order ${order.orderNumber}: ${oldStatus} → ${newStatus} by admin ${adminId}`,
+      );
+      return result;
     });
 
-    this.logger.log(
-      `Order ${order.orderNumber}: ${oldStatus} → ${newStatus} by admin ${adminId}`,
-    );
-    return this.transformOrder(updated);
+    return this.transformOrder(updatedOrder);
   }
 }
